@@ -1,0 +1,126 @@
+.nav {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  background-color: #0055ff67;
+  line-height: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav .right {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+}
+
+.nav ul {
+  display: flex;
+  justify-content: right;
+  align-items: center;
+}
+
+.nav ul li {
+  margin: 0 20px;
+  list-style: none;
+}
+
+.nav ul li a {
+  display: inline-block;
+  height: 50px;
+  width: 100px;
+  border-radius: 5px;
+  background-color: #f9fafc;
+  text-decoration: none;
+  text-align: center;
+  color: #000;
+  font-size: 16px;
+  line-height: 50px;
+}
+
+.nav .right .new {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: black;
+}
+
+.main {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  width: 100%;
+  height: calc(100vh - 50px);
+  background-color: #f0bae067;
+}
+
+/* 修改侧边栏相关样式 */
+.main .side {
+  width: 20%;
+  min-width: 50px;
+  /* 确保收起时有最小宽度 */
+  height: 100%;
+  background-color: #ddf19267;
+  transition: width 0.3s ease;
+  /* 添加过渡效果 */
+  overflow: hidden;
+  white-space: nowrap;
+  /* 防止内容换行 */
+}
+
+/* 收起状态下的样式 */
+.side.collapsed {
+  width: 50px;
+  /* 收起时的宽度 */
+}
+
+.side.collapsed+.chat-box {
+  width: calc(100% - 50px);
+  /* 侧边栏收起时聊天框的宽度 */
+}
+
+/* 侧边栏内容样式 */
+.side-content {
+  padding: 10px;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.side.collapsed .side-content {
+  opacity: 0;
+}
+
+.main .chat-box {
+  width: 80%;
+  height: 100%;
+  background-color: #49bd8367;
+  transition: width 0.3s ease;
+  /* 添加过渡效果 */
+  display: flex;
+  flex-direction: column;
+  /* 使用垂直布局 */
+}
+
+.chat-box .chat-content {
+  width: 100%;
+  height: 80%;
+  /* 占据80%高度 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  /* 允许内容过多时滚动 */
+}
+
+.chat-box .input-box {
+  width: 100%;
+  height: 20%;
+  /* 占据20%高度 */
+  background-color: #f9fafc;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
