@@ -4,8 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <link rel="stylesheet" href="./base.css">
+  <title>AI对话框应用开发</title>
+  <link rel="stylesheet" href="./iconfont/iconfont.css">
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/msg.css">
+
 </head>
 
 <body>
@@ -38,15 +41,44 @@
     </div>
     <div class="chat-box">
       <div class="chat-content">
-        聊天内容111111111111
+        <div class="message user">用户消息</div>
+        <div class="message ai">AI回复消息</div>
+
       </div>
       <div class="input-box">
-        
+        <i class="iconfont icon-xiangyou"></i>
+        <textarea id="tx" placeholder="发送消息" rows="10" maxlength="1000"></textarea>
       </div>
     </div>
   </div>
 
   <script src="./side.js"></script>
+  <script>
+    const tx = document.getElementById('tx');
+    const chatContent = document.querySelector('.chat-content');
+
+    // 监听文本域的按键事件，实现按下回车发送消息
+    tx.addEventListener('keyup', function (e) {
+      if (e.key === 'Enter') {
+        const messageText = tx.value.trim(); // 先保存消息内容
+        console.log(messageText)
+        if (messageText) {
+          // 创建一条消息节点
+          const msgDiv = document.createElement('div');
+          msgDiv.classList.add('message', 'user');   // 用户消息样式
+          msgDiv.innerText = messageText;  // 使用保存的消息内容
+          // 追加到聊天区域
+          chatContent.appendChild(msgDiv);
+          // 滚动到底部
+          chatContent.scrollTop = chatContent.scrollHeight;
+        }
+
+        // 最后清空文本域
+        tx.value = '';
+      }
+    })
+
+  </script>
 </body>
 
 </html>
