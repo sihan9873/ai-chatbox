@@ -41,7 +41,7 @@
     </div>
     <div class="chat-box">
       <div class="chat-content">
-        
+
       </div>
       <div class="input-box">
         <textarea id="tx" placeholder="发送消息" rows="10" maxlength="1000"></textarea>
@@ -80,12 +80,28 @@
           chatService.addMessage(userMessage);
           chatService.renderMessage(chatContent, userMessage);
 
-          // 模拟AI回复（实际应用中应调用API）
-          setTimeout(() => {
-            const aiMessage = chatService.createMessage('assistant', '这是AI的回复消息。');
-            chatService.addMessage(aiMessage);
-            chatService.renderMessage(chatContent, aiMessage);
-          }, 500);
+          // 更新用户消息状态为加载中
+          chatService.updateMessageStatus(userMessage.id, 'loading');
+          chatService.renderMessage(chatContent, userMessage);
+
+          // 调用大模型API获取回复
+          chatService.sendMessageToAPI(messageText)
+            .then(response => {
+              // 更新用户消息状态为已发送
+              chatService.updateMessageStatus(userMessage.id, 'sent');
+              chatService.renderMessage(chatContent, userMessage);
+
+              // 创建AI回复消息
+              const aiMessage = chatService.createMessage('assistant', response);
+              chatService.addMessage(aiMessage);
+              chatService.renderMessage(chatContent, aiMessage);
+            })
+            .catch(error => {
+              // 更新用户消息状态为错误
+              chatService.updateMessageStatus(userMessage.id, 'error');
+              chatService.renderMessage(chatContent, userMessage);
+              console.error('获取AI回复失败:', error);
+            });
 
           // 滚动到底部
           chatContent.scrollTop = chatContent.scrollHeight;

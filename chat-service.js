@@ -7,6 +7,12 @@ class ChatService {
     this.messages = [];
     // 本地存储的键名
     this.storageKey = 'chat_messages';
+    // API配置
+    this.apiConfig = {
+      url: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
+      key: '3977ed5a-ed0d-470f-b593-11f5d300255a',
+      model: 'doubao-seed-1-6-251015'
+    };
   }
 
   /**
@@ -214,6 +220,120 @@ class ChatService {
   }
   
   /**
+   * 发送消息到大模型API
+   * @param {string} content - 消息内容
+   * @returns {Promise<string>} API返回的响应内容
+   */
+  sendMessageToAPI(content) {
+    const apiUrl = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
+    const apiKey = '3977ed5a-ed0d-470f-b593-11f5d300255a';
+    
+    const requestBody = {
+      "model": "doubao-seed-1-6-251015",
+      "max_completion_tokens": 65535,
+      "messages": [
+        {
+          "content": [
+            {
+              "text": content,
+              "type": "text"
+            }
+          ],
+          "role": "user"
+        }
+      ],
+      "reasoning_effort": "medium"
+    };
+    
+    return fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(requestBody)
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`API请求失败: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // 假设API返回的响应格式包含choices数组，其中第一个元素的message.content是AI的回复
+      if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+        return data.choices[0].message.content;
+      } else {
+        throw new Error('API返回格式不正确');
+      }
+    })
+    .catch(error => {
+      console.error('API调用错误:', error);
+      throw error;
+    });
+  }
+  
+  /**
+   * 发送带图片的消息到大模型API
+   * @param {string} content - 文本内容
+   * @param {string} imageUrl - 图片URL
+   * @returns {Promise<string>} API返回的响应内容
+   */
+  sendImageMessageToAPI(content, imageUrl) {
+    const apiUrl = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
+    const apiKey = '3977ed5a-ed0d-470f-b593-11f5d300255a';
+    
+    const requestBody = {
+      "model": "doubao-seed-1-6-251015",
+      "max_completion_tokens": 65535,
+      "messages": [
+        {
+          "content": [
+            {
+              "image_url": {
+                "url": imageUrl
+              },
+              "type": "image_url"
+            },
+            {
+              "text": content,
+              "type": "text"
+            }
+          ],
+          "role": "user"
+        }
+      ],
+      "reasoning_effort": "medium"
+    };
+    
+    return fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(requestBody)
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`API请求失败: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+        return data.choices[0].message.content;
+      } else {
+        throw new Error('API返回格式不正确');
+      }
+    })
+    .catch(error => {
+      console.error('API调用错误:', error);
+      throw error;
+    });
+  }
+  
+  /**
    * 重试发送失败的消息
    * @param {string} messageId - 消息ID
    * @returns {Promise<Object>} 重试结果
@@ -225,22 +345,23 @@ class ChatService {
       return Promise.reject(new Error('消息不存在'));
     }
     
-    // 模拟异步发送过程
-    return new Promise((resolve, reject) => {
-      // 这里应该是实际的消息发送逻辑
-      setTimeout(() => {
-        // 模拟随机成功或失败
-        const isSuccess = Math.random() > 0.3; // 70%成功率
+    this.updateMessageStatus(messageId, 'loading');
+    
+    // 使用实际的API调用
+    return this.sendMessageToAPI(message.content)
+      .then(response => {
+        this.updateMessageStatus(messageId, 'sent');
         
-        if (isSuccess) {
-          this.updateMessageStatus(messageId, 'sent');
-          resolve(message);
-        } else {
-          this.updateMessageStatus(messageId, 'error');
-          reject(new Error('发送失败，请重试'));
-        }
-      }, 1500);
-    });
+        // 创建AI回复消息
+        const aiMessage = this.createMessage('assistant', response);
+        this.addMessage(aiMessage);
+        
+        return message;
+      })
+      .catch(error => {
+        this.updateMessageStatus(messageId, 'error');
+        throw new Error('发送失败，请重试');
+      });
   }
   
   /**
