@@ -208,5 +208,48 @@ chatContent.scrollTop = chatContent.scrollHeight;
 
 这种设计模式在聊天应用、邮件客户端、社交媒体等需要长时间滚动浏览内容但又要保持界面元素可见的应用中非常常见。
 
+# 消息状态管理功能
 
+### 1. 消息状态架构设计
+新增了4种消息状态：
+
+- loading ：消息发送中
+- sent ：消息发送成功
+- error ：消息发送失败
+- received ：消息已被接收（用于双向通信场景）
+### 2. 核心功能实现
+更新的方法：
+
+- createMessage(role, content, status = 'sent', additionalProps = {}) ：现在可以直接指定消息状态
+- updateMessage(messageId, updates) ：增强支持状态变化事件通知
+- renderMessage(container, message) ：完全重构以支持不同状态的UI渲染
+新增的核心方法：
+
+- updateMessageStatus(messageId, status) ：专门用于更新消息状态
+- retryMessage(messageId) ：重试发送失败的消息
+- isMessageLoading(messageId) ：检查消息是否正在发送中
+- cancelMessage(messageId) ：取消正在发送的消息
+### 3. 用户界面增强
+状态指示器：
+
+- 加载中：显示⏳图标，带有脉冲动画
+- 发送成功：显示✓图标，绿色
+- 发送失败：显示✗图标，红色，带有重试按钮
+- 已接收：显示✓✓图标，蓝色
+视觉差异化：
+
+- 不同状态使用不同的边框颜色和背景色
+- 错误状态有特殊的背景高亮
+- 加载状态有透明度变化
+### 4. 事件系统
+添加了完整的事件通知机制：
+
+- on(eventName, callback) ：注册事件监听器
+- off(eventName, callback) ：移除事件监听器
+- triggerEvent(eventName, data) ：触发事件
+- 状态变化时自动触发 messageStatusChanged 事件
+### 5. 安全性和优化
+- 添加了 escapeHTML() 方法防止XSS攻击
+- 支持消息更新时的DOM元素复用，避免重复创建
+- 添加了批量操作和查询方法
 
