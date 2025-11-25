@@ -3,12 +3,15 @@
  */
 class ChatService {
   constructor() {
+    // 获取配置（从全局变量或模块导入）
+    const config = window.appConfig || {};
+    
     // 存储消息的数组
     this.messages = [];
-    // 本地存储的键名
-    this.storageKey = 'chat_messages';
-    // API配置
-    this.apiConfig = {
+    // 本地存储的键名（从配置获取）
+    this.storageKey = config.storageKey || 'chat_messages';
+    // API配置（从配置获取）
+    this.apiConfig = config.api || {
       url: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
       key: '3977ed5a-ed0d-470f-b593-11f5d300255a',
       model: 'doubao-seed-1-6-251015'
