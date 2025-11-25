@@ -23,17 +23,27 @@
   /* 与右侧边界保持15px距离 */
   word-break: break-word;
   /* 超长自动换行 */
-  background-color: #e3fdee;
+  background-color: #ffffff;
   /* 用户消息使用不同背景色区分 */
 }
 
-.ai {
+.assistant {
   margin-right: auto;
   /* AI消息靠左侧显示 */
   margin-left: 15px;
   /* 与左侧边界保持15px距离 */
   word-break: break-word;
   /* 超长自动换行 */
-  background-color: #ffffff;
+  background-color: #e3fdee;
   /* AI消息使用白色背景 */
+}
+
+.send-btn {
+  display: flex;
+  justify-content: right;
+  align-items: center;
+  /* margin-left: auto; */
+  margin-right: 15px;
+  font-size: 24px;
+  color: black;
 }

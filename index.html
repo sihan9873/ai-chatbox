@@ -42,41 +42,73 @@
     <div class="chat-box">
       <div class="chat-content">
         <div class="message user">用户消息</div>
-        <div class="message ai">AI回复消息</div>
+        <div class="message assistant">AI回复消息</div>
 
       </div>
       <div class="input-box">
-        <i class="iconfont icon-xiangyou"></i>
         <textarea id="tx" placeholder="发送消息" rows="10" maxlength="1000"></textarea>
+        <i class="iconfont icon-arrow-left-bold send-btn"></i>
       </div>
     </div>
   </div>
 
   <script src="./side.js"></script>
+  <script src="./chat-service.js"></script>
   <script>
-    const tx = document.getElementById('tx');
-    const chatContent = document.querySelector('.chat-content');
+    // 等待DOM加载完成
+    document.addEventListener('DOMContentLoaded', function () {
+      const tx = document.getElementById('tx');
+      const chatContent = document.querySelector('.chat-content');
 
-    // 监听文本域的按键事件，实现按下回车发送消息
-    tx.addEventListener('keyup', function (e) {
-      if (e.key === 'Enter') {
-        const messageText = tx.value.trim(); // 先保存消息内容
-        console.log(messageText)
+      // 初始化聊天服务
+      const chatService = new ChatService();
+
+      // 从本地存储加载历史消息
+      const historyMessages = chatService.loadMessages();
+      // 渲染历史消息
+      historyMessages.forEach(message => {
+        chatService.renderMessage(chatContent, message);
+      });
+
+      // 创建可复用的发送消息函数
+      function sendMessage() {
+        const messageText = tx.value.trim();
+
         if (messageText) {
-          // 创建一条消息节点
-          const msgDiv = document.createElement('div');
-          msgDiv.classList.add('message', 'user');   // 用户消息样式
-          msgDiv.innerText = messageText;  // 使用保存的消息内容
-          // 追加到聊天区域
-          chatContent.appendChild(msgDiv);
+          // 创建用户消息对象
+          const userMessage = chatService.createMessage('user', messageText);
+
+          // 保存并渲染用户消息
+          chatService.addMessage(userMessage);
+          chatService.renderMessage(chatContent, userMessage);
+
+          // 模拟AI回复（实际应用中应调用API）
+          setTimeout(() => {
+            const aiMessage = chatService.createMessage('assistant', '这是AI的回复消息。');
+            chatService.addMessage(aiMessage);
+            chatService.renderMessage(chatContent, aiMessage);
+          }, 500);
+
           // 滚动到底部
           chatContent.scrollTop = chatContent.scrollHeight;
         }
 
-        // 最后清空文本域
+        // 清空文本域
         tx.value = '';
       }
-    })
+
+      // 监听文本域的按键事件，实现按下回车发送消息
+      tx.addEventListener('keyup', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) { // 按下Enter但不按Shift时发送
+          e.preventDefault(); // 阻止默认换行行为
+          sendMessage(); // 调用可复用的发送消息函数
+        }
+      });
+
+      // 为发送按钮添加点击事件
+      const sendBtn = document.querySelector('.send-btn');
+      sendBtn.addEventListener('click', sendMessage); // 调用相同的发送消息函数
+    });
 
   </script>
 </body>

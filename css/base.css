@@ -1,3 +1,8 @@
+* {
+  margin: 0;
+  padding: 0;  
+}
+
 .nav {
   top: 0;
   left: 0;
@@ -8,6 +13,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 4px solid black;
 }
 
 .nav .right {
@@ -68,6 +74,7 @@
   overflow: hidden;
   white-space: nowrap;
   /* 防止内容换行 */
+  border-right: 4px solid black;
 }
 
 /* 收起状态下的样式 */
@@ -108,7 +115,7 @@
   height: 25%;
   /* 占据20%高度 */
   background-color: #f9fafc;
-  border-radius: 5px;
+  border-top: 4px solid black;
 }
 
 .input-box textarea {
@@ -122,4 +129,6 @@
   outline: none;
   resize: none;
   font-size: 16px;
+  padding-left: 10px;
+  padding-top: 10px;
 }
