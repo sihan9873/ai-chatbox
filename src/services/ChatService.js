@@ -1,10 +1,10 @@
 /**
  * ChatService类 - 处理聊天消息的数据结构和相关操作
  */
+import config from '../utils/config';
+
 class ChatService {
   constructor() {
-    // 获取配置（从全局变量或模块导入）
-    const config = window.appConfig || {};
 
     // 存储消息的数组
     this.messages = [];
@@ -256,10 +256,19 @@ class ChatService {
       },
       body: JSON.stringify(requestBody)
     })
-      .then(response => response.ok ? response.json() : Promise.reject(`API请求失败: ${response.status}`))
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`API请求失败: ${response.status}`);
+        }
+        return response.json();
+      })
       .then(data => {
-        if (data.choices?.[0]?.message?.content) return data.choices[0].message.content;
-        throw new Error('API返回格式不正确');
+        // 假设API返回的响应格式包含choices数组，其中第一个元素的message.content是AI的回复
+        if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+          return data.choices[0].message.content;
+        } else {
+          throw new Error('API返回格式不正确');
+        }
       })
       .catch(error => {
         console.error('API调用错误:', error);
@@ -472,3 +481,5 @@ class ChatService {
     return !!message;
   }
 }
+
+export default ChatService;

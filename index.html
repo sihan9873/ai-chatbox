@@ -1,55 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI对话框应用开发</title>
-  <link rel="stylesheet" href="./iconfont/iconfont.css">
-  <link rel="stylesheet" href="./css/base.css">
-  <link rel="stylesheet" href="./css/msg.css">
-
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ai-chatbox</title>
 </head>
 
 <body>
-  <div class="nav">
-    <div class="right">
-      <div class="new">
-      </div>
-    </div>
-    <ul>
-      <li>
-        <a class="login">
-          登录
-        </a>
-      </li>
-      <li>
-        <a class="doownload">
-          下载
-        </a>
-      </li>
-    </ul>
-  </div>
-
-  <div class="main">
-    <div class="side">
-      <div class="side-content">侧边栏内容</div>
-    </div>
-    <div class="chat-box">
-      <div class="chat-content">
-
-      </div>
-      <div class="input-box">
-        <textarea id="tx" placeholder="发送消息" rows="10" maxlength="1000"></textarea>
-        <i class="iconfont icon-arrow-left-bold send-btn"></i>
-      </div>
-    </div>
-  </div>
-
-  <script src="./config.js"></script>
-  <script src="./chat-service.js"></script>
-  <script src="./side.js"></script>
-  <script src="./main.js"></script>
+  <div id="root"></div>
+  <script type="module" src="/src/index.jsx"></script>
 </body>
 
 </html>
