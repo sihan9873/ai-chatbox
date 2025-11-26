@@ -5,7 +5,7 @@ class ChatService {
   constructor() {
     // 获取配置（从全局变量或模块导入）
     const config = window.appConfig || {};
-    
+
     // 存储消息的数组
     this.messages = [];
     // 本地存储的键名（从配置获取）
@@ -96,30 +96,30 @@ class ChatService {
   renderMessage(container, message) {
     // 检查是否已存在该消息，如果存在则更新而不是创建新元素
     let msgDiv = container.querySelector(`.message[data-id="${message.id}"]`);
-    
+
     if (!msgDiv) {
       // 创建新的消息元素
       msgDiv = document.createElement('div');
       msgDiv.dataset.id = message.id; // 添加data-id属性以便后续查找
-      
+
       // 设置消息类名，role为user或assistant
       const roleClass = message.role === 'user' ? 'user' : 'assistant';
       msgDiv.classList.add('message', roleClass);
-      
+
       // 添加到容器
       container.appendChild(msgDiv);
     } else {
       // 如果是更新现有消息，先移除所有状态类
       msgDiv.classList.remove('status-loading', 'status-sent', 'status-error', 'status-received');
     }
-    
+
     // 添加当前状态的类名
     msgDiv.classList.add(`status-${message.status}`);
-    
+
     // 构建消息内容HTML，包含状态指示器
     let statusIndicator = '';
     let statusText = '';
-    
+
     switch (message.status) {
       case 'loading':
         statusIndicator = '<span class="status-indicator loading">⏳</span>';
@@ -141,7 +141,7 @@ class ChatService {
         statusIndicator = '';
         statusText = '';
     }
-    
+
     // 设置消息HTML内容
     msgDiv.innerHTML = `
       <div class="message-content">${this.escapeHTML(message.content)}</div>
@@ -150,7 +150,7 @@ class ChatService {
         <span class="status-text">${statusText}</span>
       </div>
     `;
-    
+
     // 如果是错误状态，添加重试按钮
     if (message.status === 'error') {
       const retryButton = document.createElement('button');
@@ -163,10 +163,10 @@ class ChatService {
       });
       msgDiv.appendChild(retryButton);
     }
-    
+
     // 滚动到底部
     container.scrollTop = container.scrollHeight;
-    
+
     return msgDiv;
   }
 
@@ -201,17 +201,17 @@ class ChatService {
         ...updates
       };
       this.saveMessages();
-      
+
       // 如果更新了状态，触发状态变化事件
       if (updates.status) {
         this.triggerEvent('messageStatusChanged', this.messages[messageIndex]);
       }
-      
+
       return this.messages[messageIndex];
     }
     return null;
   }
-  
+
   /**
    * 更新消息状态
    * @param {string} messageId - 消息ID
@@ -221,7 +221,7 @@ class ChatService {
   updateMessageStatus(messageId, status) {
     return this.updateMessage(messageId, { status });
   }
-  
+
   /**
    * 发送消息到大模型API
    * @param {string} content - 消息内容
@@ -230,7 +230,7 @@ class ChatService {
   sendMessageToAPI(content) {
     const apiUrl = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
     const apiKey = '3977ed5a-ed0d-470f-b593-11f5d300255a';
-    
+
     const requestBody = {
       "model": "doubao-seed-1-6-251015",
       "max_completion_tokens": 65535,
@@ -247,7 +247,7 @@ class ChatService {
       ],
       "reasoning_effort": "medium"
     };
-    
+
     return fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -256,26 +256,17 @@ class ChatService {
       },
       body: JSON.stringify(requestBody)
     })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`API请求失败: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      // 假设API返回的响应格式包含choices数组，其中第一个元素的message.content是AI的回复
-      if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-        return data.choices[0].message.content;
-      } else {
+      .then(response => response.ok ? response.json() : Promise.reject(`API请求失败: ${response.status}`))
+      .then(data => {
+        if (data.choices?.[0]?.message?.content) return data.choices[0].message.content;
         throw new Error('API返回格式不正确');
-      }
-    })
-    .catch(error => {
-      console.error('API调用错误:', error);
-      throw error;
-    });
+      })
+      .catch(error => {
+        console.error('API调用错误:', error);
+        throw error;
+      });
   }
-  
+
   /**
    * 发送带图片的消息到大模型API
    * @param {string} content - 文本内容
@@ -285,7 +276,7 @@ class ChatService {
   sendImageMessageToAPI(content, imageUrl) {
     const apiUrl = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
     const apiKey = '3977ed5a-ed0d-470f-b593-11f5d300255a';
-    
+
     const requestBody = {
       "model": "doubao-seed-1-6-251015",
       "max_completion_tokens": 65535,
@@ -308,7 +299,7 @@ class ChatService {
       ],
       "reasoning_effort": "medium"
     };
-    
+
     return fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -317,25 +308,25 @@ class ChatService {
       },
       body: JSON.stringify(requestBody)
     })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`API请求失败: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.choices && data.choices.length > 0 && data.choices[0].message) {
-        return data.choices[0].message.content;
-      } else {
-        throw new Error('API返回格式不正确');
-      }
-    })
-    .catch(error => {
-      console.error('API调用错误:', error);
-      throw error;
-    });
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`API请求失败: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+          return data.choices[0].message.content;
+        } else {
+          throw new Error('API返回格式不正确');
+        }
+      })
+      .catch(error => {
+        console.error('API调用错误:', error);
+        throw error;
+      });
   }
-  
+
   /**
    * 重试发送失败的消息
    * @param {string} messageId - 消息ID
@@ -343,22 +334,22 @@ class ChatService {
    */
   retryMessage(messageId) {
     const message = this.messages.find(msg => msg.id === messageId);
-    
+
     if (!message) {
       return Promise.reject(new Error('消息不存在'));
     }
-    
+
     this.updateMessageStatus(messageId, 'loading');
-    
+
     // 使用实际的API调用
     return this.sendMessageToAPI(message.content)
       .then(response => {
         this.updateMessageStatus(messageId, 'sent');
-        
+
         // 创建AI回复消息
         const aiMessage = this.createMessage('assistant', response);
         this.addMessage(aiMessage);
-        
+
         return message;
       })
       .catch(error => {
@@ -366,7 +357,7 @@ class ChatService {
         throw new Error('发送失败，请重试');
       });
   }
-  
+
   /**
    * HTML转义，防止XSS攻击
    * @param {string} text - 需要转义的文本
@@ -377,12 +368,12 @@ class ChatService {
     div.textContent = text;
     return div.innerHTML;
   }
-  
+
   /**
    * 事件监听器存储
    */
   _events = {};
-  
+
   /**
    * 添加事件监听器
    * @param {string} eventName - 事件名称
@@ -394,7 +385,7 @@ class ChatService {
     }
     this._events[eventName].push(callback);
   }
-  
+
   /**
    * 移除事件监听器
    * @param {string} eventName - 事件名称
@@ -405,7 +396,7 @@ class ChatService {
       this._events[eventName] = this._events[eventName].filter(cb => cb !== callback);
     }
   }
-  
+
   /**
    * 触发事件
    * @param {string} eventName - 事件名称
@@ -441,7 +432,7 @@ class ChatService {
       return msgTime >= startTime && msgTime <= endTime;
     });
   }
-  
+
   /**
    * 根据状态获取消息
    * @param {string} status - 消息状态
@@ -450,7 +441,7 @@ class ChatService {
   getMessagesByStatus(status) {
     return this.messages.filter(msg => msg.status === status);
   }
-  
+
   /**
    * 批量更新消息状态
    * @param {Array<string>} messageIds - 消息ID数组
@@ -460,7 +451,7 @@ class ChatService {
   batchUpdateMessageStatus(messageIds, status) {
     return messageIds.map(id => this.updateMessageStatus(id, status));
   }
-  
+
   /**
    * 检查消息是否发送中
    * @param {string} messageId - 消息ID
@@ -470,7 +461,7 @@ class ChatService {
     const message = this.messages.find(msg => msg.id === messageId);
     return message ? message.status === 'loading' : false;
   }
-  
+
   /**
    * 取消正在发送的消息
    * @param {string} messageId - 消息ID
