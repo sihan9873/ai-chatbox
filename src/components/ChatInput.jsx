@@ -28,7 +28,7 @@ const ChatInput = ({ onSend }) => {
         onChange={(e) => setMessageText(e.target.value)}
         onKeyPress={handleKeyPress}
       />
-      <button className="iconfont icon-arrow-left-bold send-btn" onClick={handleSend}>
+      <button className="send-btn" onClick={handleSend}>
         发送
       </button>
     </div>
