@@ -1,6 +1,6 @@
 * {
   margin: 0;
-  padding: 0;  
+  padding: 0;
 }
 
 .nav {
@@ -66,37 +66,53 @@
 .main .side {
   width: 20%;
   min-width: 50px;
-  /* 确保收起时有最小宽度 */
   height: 100%;
   background-color: #fff45477;
-  transition: width 0.3s ease;
-  /* 添加过渡效果 */
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   white-space: nowrap;
-  /* 防止内容换行 */
   border-right: 4px solid black;
+  position: relative;
+  cursor: pointer;
 }
 
 /* 收起状态下的样式 */
 .side.collapsed {
   width: 50px;
-  /* 收起时的宽度 */
+}
+
+/* 侧边栏展开时聊天框的宽度变化 */
+.main .chat-box {
+  width: 80%;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .side.collapsed+.chat-box {
   width: calc(100% - 50px);
-  /* 侧边栏收起时聊天框的宽度 */
 }
 
 /* 侧边栏内容样式 */
 .side-content {
   padding: 10px;
   opacity: 1;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
 .side.collapsed .side-content {
   opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+/* 添加收起状态下的提示图标 */
+.side.collapsed::after {
+  content: '<<';
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
 }
 
 .main .chat-box {
