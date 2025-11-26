@@ -94,6 +94,56 @@ const ChatPage = () => {
       });
   };
 
+  // 重新生成AI回复
+  const handleRegenerateMessage = (aiMessageId) => {
+    // 找到AI消息在数组中的位置
+    const aiMessageIndex = messages.findIndex(msg => msg.id === aiMessageId);
+    if (aiMessageIndex === -1 || messages[aiMessageIndex].role !== 'assistant') return;
+
+    // 找到对应的用户消息（通常是AI消息前一条）
+    const userMessage = messages[aiMessageIndex - 1];
+    if (!userMessage || userMessage.role !== 'user') return;
+
+    // 创建一个临时的加载中消息来替换原有AI消息
+    const loadingMessage = {
+      ...messages[aiMessageIndex],
+      content: '正在生成新的回复...',
+      status: 'loading'
+    };
+
+    // 更新UI，显示加载状态
+    const updatedMessages = [...messages];
+    updatedMessages[aiMessageIndex] = loadingMessage;
+    setMessages(updatedMessages);
+
+    // 发送请求获取新的回复
+    chatService.sendMessageToAPI(userMessage.content)
+      .then(response => {
+        // 创建新的AI回复消息
+        const newAiMessage = chatService.createMessage('assistant', response);
+        newAiMessage.id = aiMessageId; // 保持相同的ID以便替换
+        
+        // 更新消息列表，替换原有AI消息
+        const finalMessages = [...messages];
+        finalMessages[aiMessageIndex] = newAiMessage;
+        setMessages(finalMessages);
+        
+        // 更新本地存储
+        chatService.updateMessage(newAiMessage);
+      })
+      .catch(error => {
+        console.error('重新生成回复失败:', error);
+        // 恢复原有消息状态
+        const errorMessage = {
+          ...messages[aiMessageIndex],
+          status: 'error'
+        };
+        const errorMessages = [...messages];
+        errorMessages[aiMessageIndex] = errorMessage;
+        setMessages(errorMessages);
+      });
+  };
+
   return (
     <div className="main">
       <Sidebar />
@@ -104,6 +154,7 @@ const ChatPage = () => {
               key={message.id} 
               message={message}
               onRetry={handleRetryMessage}
+              onRegenerate={handleRegenerateMessage}
             />
           ))}
         </div>

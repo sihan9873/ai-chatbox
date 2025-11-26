@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 
-const ChatMessage = ({ message, onRetry }) => {
+const ChatMessage = ({ message, onRetry, onRegenerate }) => {
   const contentRef = useRef(null);
+  const [copyStatus, setCopyStatus] = React.useState('');
   
   // 获取状态指示器
   const getStatusIndicator = () => {
@@ -45,6 +46,43 @@ const ChatMessage = ({ message, onRetry }) => {
       }
     }
   }, [message.content, message.role]);
+  
+  // 复制内容功能
+  const handleCopy = async () => {
+    try {
+      // 复制原始文本内容
+      await navigator.clipboard.writeText(message.content);
+      setCopyStatus('已复制！');
+      // 3秒后重置状态
+      setTimeout(() => setCopyStatus(''), 3000);
+    } catch (err) {
+      console.error('复制失败:', err);
+      // 降级方案：创建临时文本区域
+      const textArea = document.createElement('textarea');
+      textArea.value = message.content;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setCopyStatus('已复制！');
+        setTimeout(() => setCopyStatus(''), 3000);
+      } catch (fallbackErr) {
+        console.error('降级复制也失败:', fallbackErr);
+        setCopyStatus('复制失败');
+        setTimeout(() => setCopyStatus(''), 3000);
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+  
+  // 重新生成功能
+  const handleRegenerate = () => {
+    if (onRegenerate) {
+      onRegenerate(message.id);
+    }
+  };
 
   return (
     <div className={`message ${message.role} status-${message.status}`} data-id={message.id}>
@@ -56,6 +94,26 @@ const ChatMessage = ({ message, onRetry }) => {
       ) : (
         // 用户消息保持原样显示
         <div className="message-content">{message.content}</div>
+      )}
+      
+      {/* AI消息的快捷操作按钮 */}
+      {message.role === 'assistant' && (
+        <div className="message-actions">
+          <button 
+            className="action-button copy-button"
+            onClick={handleCopy}
+            title="复制内容"
+          >
+            {copyStatus || '复制'}
+          </button>
+          <button 
+            className="action-button regenerate-button"
+            onClick={handleRegenerate}
+            title="重新生成回复"
+          >
+            重新生成
+          </button>
+        </div>
       )}
       <div className="message-status">
         <span className={`status-indicator ${message.status}`}>
