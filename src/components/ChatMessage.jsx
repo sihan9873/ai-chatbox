@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github.css'; // 使用GitHub样式的代码高亮
 
 const ChatMessage = ({ message, onRetry, onRegenerate }) => {
   const contentRef = useRef(null);
@@ -35,11 +37,81 @@ const ChatMessage = ({ message, onRetry, onRegenerate }) => {
           breaks: true,  // 将换行符转换为<br>
           gfm: true,     // 启用GitHub风格的Markdown
           pedantic: false, // 不启用严格的Markdown规范
-          silent: true    // 静默模式，不输出警告
+          silent: true,    // 静默模式，不输出警告
+          highlight: function(code, lang) {
+            // 如果指定了语言且highlight.js支持该语言，则进行高亮
+            if (lang && hljs.getLanguage(lang)) {
+              try {
+                return hljs.highlight(code, { language: lang }).value;
+              } catch (err) {}
+            }
+            // 否则尝试自动检测语言
+            return hljs.highlightAuto(code).value;
+          }
         });
         
         // 使用marked.js解析Markdown内容
         contentRef.current.innerHTML = window.marked.parse(message.content);
+        
+        // 为所有代码块添加复制按钮
+        const codeBlocks = contentRef.current.querySelectorAll('pre code');
+        codeBlocks.forEach((codeBlock) => {
+          const pre = codeBlock.parentElement;
+          // 检查是否已经添加了复制按钮
+          if (!pre.querySelector('.copy-code-btn')) {
+            // 创建代码块容器
+            const codeContainer = document.createElement('div');
+            codeContainer.className = 'code-block-container';
+            
+            // 将pre移到容器中
+            pre.parentNode.insertBefore(codeContainer, pre);
+            codeContainer.appendChild(pre);
+            
+            // 创建复制按钮
+            const copyButton = document.createElement('button');
+            copyButton.className = 'copy-code-btn';
+            copyButton.textContent = '复制';
+            copyButton.title = '复制代码块';
+            
+            // 添加复制功能
+            copyButton.addEventListener('click', async () => {
+              try {
+                await navigator.clipboard.writeText(codeBlock.textContent);
+                copyButton.textContent = '已复制!';
+                setTimeout(() => {
+                  copyButton.textContent = '复制';
+                }, 2000);
+              } catch (err) {
+                console.error('复制代码失败:', err);
+                // 降级方案
+                const textArea = document.createElement('textarea');
+                textArea.value = codeBlock.textContent;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                  document.execCommand('copy');
+                  copyButton.textContent = '已复制!';
+                  setTimeout(() => {
+                    copyButton.textContent = '复制';
+                  }, 2000);
+                } catch (fallbackErr) {
+                  console.error('降级复制也失败:', fallbackErr);
+                }
+                document.body.removeChild(textArea);
+              }
+            });
+            
+            // 将复制按钮添加到容器中
+            codeContainer.appendChild(copyButton);
+          }
+        });
+        
+        // 应用highlight.js样式到已渲染的代码块
+        codeBlocks.forEach((codeBlock) => {
+          hljs.highlightElement(codeBlock);
+        });
       } catch (error) {
         console.error('Markdown解析错误:', error);
         contentRef.current.textContent = message.content;
