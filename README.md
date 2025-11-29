@@ -151,7 +151,74 @@ contentRef.current.innerHTML = window.marked.parse(message.content);
 
 这使得AI回复可以包含丰富的格式，如标题、列表、链接等，提升阅读体验。
 
-#### 3.2.5 数据持久化
+#### 3.2.5 代码块语法高亮与一键复制
+
+为了提升代码阅读体验和使用便利性，实现了代码块的语法高亮和一键复制功能：
+
+1. **语法高亮实现**：
+   - 使用highlight.js库对代码进行语法高亮
+   - 支持多种编程语言的自动识别和高亮
+   - 应用GitHub风格的代码高亮主题
+
+   ```javascript
+   // 配置marked使用highlight.js进行代码高亮
+   window.marked.setOptions({
+     // 其他配置...
+     highlight: function(code, lang) {
+       // 如果指定了语言且highlight.js支持该语言，则进行高亮
+       if (lang && hljs.getLanguage(lang)) {
+         try {
+           return hljs.highlight(code, { language: lang }).value;
+         } catch (err) {}
+       }
+       // 否则尝试自动检测语言
+       return hljs.highlightAuto(code).value;
+     }
+   });
+   ```
+
+2. **一键复制功能**：
+   - 每个代码块右上角自动生成复制按钮
+   - 点击按钮后显示成功状态反馈
+   - 实现了复制功能的降级方案，确保兼容性
+   - 添加了美观的按钮样式和交互效果
+
+   ```javascript
+   // 为所有代码块添加复制按钮
+   const codeBlocks = contentRef.current.querySelectorAll('pre code');
+   codeBlocks.forEach((codeBlock) => {
+     const pre = codeBlock.parentElement;
+     // 创建代码块容器和复制按钮
+     const codeContainer = document.createElement('div');
+     codeContainer.className = 'code-block-container';
+     
+     // 将pre移到容器中
+     pre.parentNode.insertBefore(codeContainer, pre);
+     codeContainer.appendChild(pre);
+     
+     // 创建并配置复制按钮
+     const copyButton = document.createElement('button');
+     copyButton.className = 'copy-code-btn';
+     copyButton.textContent = '复制';
+     
+     // 添加复制事件处理
+     copyButton.addEventListener('click', async () => {
+       // 复制代码逻辑...
+     });
+     
+     codeContainer.appendChild(copyButton);
+   });
+   ```
+
+3. **样式优化**：
+   - 深色背景增强代码可读性
+   - 精心设计的复制按钮样式
+   - 响应式适配不同屏幕尺寸
+   - 代码字体优化提升阅读体验
+
+这些功能大大提升了用户阅读和使用代码的体验，使聊天应用在技术交流场景下更加实用。
+
+#### 3.2.6 数据持久化
 
 使用localStorage实现消息历史的持久化存储：
 
@@ -184,7 +251,7 @@ loadMessages() {
 }
 ```
 
-#### 3.2.6 快捷操作功能
+#### 3.2.7 快捷操作功能
 
 为AI消息提供了实用的快捷操作按钮：
 
